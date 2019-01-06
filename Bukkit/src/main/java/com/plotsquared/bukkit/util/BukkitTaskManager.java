@@ -37,7 +37,7 @@ public class BukkitTaskManager extends TaskManager {
                 Runnable tsk = taskQueue.poll();
 
                 if (tsk != null) {
-                    int id = this.bukkitMain.getServer().getScheduler().runTaskAsynchronously(this.bukkitMain, runnable).getTaskId();
+                    int id = this.bukkitMain.getServer().getScheduler().runTaskAsynchronously(this.bukkitMain, tsk).getTaskId();
 
                     ids.add(id);
                 }
