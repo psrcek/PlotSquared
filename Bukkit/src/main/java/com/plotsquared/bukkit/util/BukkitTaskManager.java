@@ -13,33 +13,36 @@ import java.util.concurrent.PriorityBlockingQueue;
 public class BukkitTaskManager extends TaskManager {
     private final BukkitMain bukkitMain;
 
-    private synchronized final Queue<Runnable> taskQueue = new Queue<>();
-    private synchronized final List<int> ids = new ArrayList<>();
+    private final Queue<Runnable> taskQueue = new PriorityBlockingQueue<>();
+    private final List<Integer> ids = new ArrayList<>();
 
-    public BukkitTaskManager(BukkitMain bukkitMain) {
+    public BukkitTaskManager(final BukkitMain bukkitMain) {
         this.bukkitMain = bukkitMain;
 
-            this.bukkitMain.getServer().getScheduler().scheduleAsyncRepeatingTask(this.bukkitMain, () -> {
-                BukkitScheduler sched = this.bukkitMain.getServer().getScheduler();
+            this.bukkitMain.getServer().getScheduler().scheduleAsyncRepeatingTask(this.bukkitMain, new Runnable() {
+                @Override
+                public void run() {
+                    BukkitScheduler sched = bukkitMain.getServer().getScheduler();
 
-                for (int i = 0; i < ids.size()) {
-                    int id = ids.get(i);
+                    for (int i = 0; i < ids.size(); i++) {
+                        int id = ids.get(i);
 
-                    if (!sched.isCurrentlyRunning(id) && !sched.isQueued(id)) {
-                        ids.remove(i);
+                        if (!sched.isCurrentlyRunning(id) && !sched.isQueued(id)) {
+                            ids.remove(i);
+                        }
                     }
-                }
 
-                if (ids.size() > 2000) {
-                    return;
-                }
+                    if (ids.size() > 2000) {
+                        return;
+                    }
 
-                Runnable tsk = taskQueue.poll();
+                    Runnable tsk = taskQueue.poll();
 
-                if (tsk != null) {
-                    int id = this.bukkitMain.getServer().getScheduler().runTaskAsynchronously(this.bukkitMain, tsk).getTaskId();
+                    if (tsk != null) {
+                        int id = bukkitMain.getServer().getScheduler().runTaskAsynchronously(bukkitMain, tsk).getTaskId();
 
-                    ids.add(id);
+                        ids.add(id);
+                    }
                 }
             }, 1, 1);
     }
